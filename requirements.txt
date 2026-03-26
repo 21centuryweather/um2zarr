@@ -1,0 +1,59 @@
+# Core scientific computing
+numpy>=1.21.0
+xarray>=2022.3.0
+dask[distributed]>=2022.3.0
+zarr>=2.10.0  # Zarr 3.x compatible
+psutil>=5.8.0  # For memory and CPU detection
+
+# UM file handling (essential)
+scitools-iris>=3.2.0
+mo-pack  # For PP file reading
+python-stratify  # For iris coordinate interpolation
+
+# Mule for UM metadata (optional, fallback to iris-only)
+# mule  # Install separately if available
+
+# CF compliance and metadata
+cf-xarray>=0.7.0
+cftime>=1.5.0
+netCDF4>=1.5.8
+
+# HPC optimization (highly recommended)
+dask_setup>=0.1.0  # HPC-tuned Dask clusters
+
+# Storage backends
+fsspec>=2022.3.0
+s3fs>=2022.3.0  # For S3 support
+gcsfs>=2022.3.0  # For Google Cloud support
+adlfs>=2022.2.0  # For Azure Blob Storage
+
+# Compression algorithms
+blosc>=1.10.0
+zstandard>=0.17.0
+lz4>=3.1.0
+brotli>=1.0.9
+
+# CLI and configuration
+click>=8.0.0
+pyyaml>=6.0
+colorama>=0.4.4  # For colored CLI output
+
+# Development and testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-xdist>=3.0.0
+pytest-mock>=3.10.0  # For mocking in tests
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.0.0
+ruff>=0.1.0  # Fast linter alternative to flake8
+pre-commit>=3.0.0  # Git hooks for code quality
+
+# Documentation
+sphinx>=6.0.0
+sphinx-rtd-theme>=1.3.0
+myst-parser>=2.0.0
+nbsphinx>=0.9.0
+jupyter>=1.0.0
+sphinx-autodoc-typehints>=1.20.0  # Better type hint documentation
+sphinx-copybutton>=0.5.0  # Copy button for code blocks

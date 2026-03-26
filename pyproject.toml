@@ -1,0 +1,229 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "um2zarr"
+version = "0.2.0"
+description = "HPC-optimized pipeline for converting Unified Model (UM) output to cloud-optimized Zarr format"
+authors = [
+    {name = "Samuel Green", email = "sam.green@unsw.edu.au"}
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.9"
+keywords = [
+    "unified-model", "zarr", "meteorology", "climate", "xarray", 
+    "dask", "hpc", "parallel-computing", "atmospheric-science"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+]
+
+dependencies = [
+    # Core scientific computing
+    "numpy>=1.21.0",
+    "xarray>=2022.3.0",
+    "dask[distributed]>=2022.3.0",
+    "zarr>=2.10.0",  # Zarr 3.x compatible
+    "psutil>=5.8.0",  # System resource detection
+    
+    # UM file handling
+    "scitools-iris>=3.2.0",
+    
+    # CF compliance and metadata
+    "cf-xarray>=0.7.0",
+    "cftime>=1.5.0",
+    "netCDF4>=1.5.8",
+    
+    # Storage backends
+    "fsspec>=2022.3.0",
+    
+    # Basic compression
+    "blosc>=1.10.0",
+    
+    # CLI and configuration
+    "click>=8.0.0",
+    "pyyaml>=6.0",
+    "colorama>=0.4.4",  # Colored CLI output
+]
+
+[project.optional-dependencies]
+# HPC optimization (highly recommended)
+hpc = ["dask_setup>=0.1.0"]
+
+# Cloud storage backends
+cloud = [
+    "s3fs>=2022.3.0",      # AWS S3
+    "gcsfs>=2022.3.0",     # Google Cloud Storage
+    "adlfs>=2022.2.0",     # Azure Blob Storage
+]
+
+# Advanced compression algorithms
+compression = [
+    "zstandard>=0.17.0",   # High-performance compression
+    "lz4>=3.1.0",          # Fast compression
+    "brotli>=1.0.9",       # Good compression ratio
+]
+
+# Development tools
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-xdist>=3.0.0",
+    "pytest-mock>=3.10.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "ruff>=0.1.0",
+    "pre-commit>=3.0.0",
+]
+
+# Documentation generation
+docs = [
+    "sphinx>=6.0.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "myst-parser>=2.0.0",
+    "nbsphinx>=0.9.0",
+    "jupyter>=1.0.0",
+    "sphinx-autodoc-typehints>=1.20.0",
+    "sphinx-copybutton>=0.5.0",
+]
+
+# Jupyter notebook gallery
+notebooks = [
+    "jupyter>=1.0.0",
+    "jupyterlab>=4.0.0",
+    "matplotlib>=3.7.0",
+    "cf-xarray>=0.7.0",
+    "intake>=0.7.0",
+    "intake-xarray>=0.7.0",
+]
+
+[project.scripts]
+um2zarr = "um2zarr.orchestration.cli:main"
+um2zarr-rechunk = "um2zarr.orchestration.cli:rechunk_cmd"
+
+[project.urls]
+Homepage = "https://github.com/21centuryweather/um2zarr"
+Documentation = "https://um2zarr.readthedocs.io"
+Repository = "https://github.com/21centuryweather/um2zarr"
+Issues = "https://github.com/21centuryweather/um2zarr/issues"
+Changelog = "https://github.com/21centuryweather/um2zarr/releases"
+"Bug Reports" = "https://github.com/21centuryweather/um2zarr/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["um2zarr*"]
+
+[tool.setuptools.package-data]
+"um2zarr" = ["data/*.py", "config/*.yaml"]
+
+# Black code formatting
+[tool.black]
+line-length = 88
+target-version = ['py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+)
+'''
+
+# Ruff linting and formatting (faster alternative to flake8)
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+"tests/**/*" = ["B011"]  # Allow assert statements in tests
+
+# MyPy type checking
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "hpc: marks tests requiring HPC environment (dask_setup)",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["um2zarr"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "setup.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+]

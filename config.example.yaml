@@ -1,0 +1,120 @@
+# um2zarr example configuration
+#
+# Use with:  um2zarr input.pp output.zarr --config config.yaml
+# Generate from CLI flags with:  um2zarr ... --save-config my_job.yaml
+#
+# All values shown here are the defaults.
+# CLI flags always override values in this file.
+
+# ---------------------------------------------------------------------------
+# Compression
+# ---------------------------------------------------------------------------
+compression: zstd          # zstd | blosc | gzip | bz2 | lz4
+compression_level: 3       # 1 (fastest) – 9 (smallest file)
+
+# ---------------------------------------------------------------------------
+# Dask parallel processing
+# ---------------------------------------------------------------------------
+dask: true                 # set to false for sequential (debug) mode
+workers: 4                 # max Dask workers (upper bound for adaptive scaling)
+memory_limit: 4GB          # memory per worker, e.g. 4GB, 512MB
+threads_per_worker: 1      # keep at 1 for I/O-bound UM conversion
+workload_type: io          # io | cpu | mixed  (hint for dask_setup)
+adaptive: true             # let Dask scale workers up/down automatically
+min_workers: 1             # minimum live workers when adaptive scaling is on
+reserve_memory_gb: 2.0     # GB of RAM to keep free per node (passed to dask_setup)
+suggest_chunks: false      # let dask_setup recommend chunk sizes for this workload
+
+# ---------------------------------------------------------------------------
+# HPC / external cluster (optional — omit or comment out for local clusters)
+# ---------------------------------------------------------------------------
+# Connect to a scheduler already running on a PBS or SLURM allocation:
+#   scheduler_file: /scratch/user/dask-scheduler.json
+#   scheduler_address: tcp://10.0.0.1:8786
+#
+# When either of these is set, --workers / --adaptive / --min-workers have
+# no effect (the external cluster manages its own resources).
+
+# ---------------------------------------------------------------------------
+# Chunking
+# ---------------------------------------------------------------------------
+chunk_strategy: balanced   # memory | balanced | storage
+
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
+validate_cf: true          # warn on CF convention violations before writing
+simple_names: false        # true → fld_s01i001 names; false → CF standard names
+
+# ---------------------------------------------------------------------------
+# Masking (pressure-level UM diagnostics)
+# ---------------------------------------------------------------------------
+nomask: false              # true → disable all heaviside masking (pass data through raw)
+hcrit: 0.5                 # heaviside threshold: grid points where H <= hcrit are masked
+
+# ---------------------------------------------------------------------------
+# Append / resume (Phase 2.1)
+# ---------------------------------------------------------------------------
+append: false              # true → open output store in append mode instead of overwriting
+append_dim: time           # dimension along which to append (append mode only)
+resume: false              # true → skip files already in the checkpoint log (batch mode)
+
+# ---------------------------------------------------------------------------
+# Batch error recovery (Phase 2.5)
+# ---------------------------------------------------------------------------
+on_error: skip             # skip | abort | retry  — per-file policy on conversion failure
+                           #   skip:  log the error and continue to the next file
+                           #   abort: stop the entire batch immediately
+                           #   retry: retry once before skipping
+
+# ---------------------------------------------------------------------------
+# Ensemble dimension support (Phase 2.4)
+# ---------------------------------------------------------------------------
+# When ensemble_dim is set, all input files are concatenated along that
+# dimension and written to a single Zarr store.  Use with a directory INPUT.
+#
+#   ensemble_dim: realization
+#   ensemble_member_pattern: 'r(\d+)i1p1f1'  # regex, first group → member ID
+
+# ---------------------------------------------------------------------------
+# Dask graph size limit (Phase 2.6)
+# ---------------------------------------------------------------------------
+max_graph_size_mb: 50.0    # auto-split computation graphs that exceed this size (MB)
+
+# ---------------------------------------------------------------------------
+# Intake catalogue generation (Phase 3.1)
+# ---------------------------------------------------------------------------
+# write_catalogue: /data/zarr/catalogue      # directory or full file path
+#                                            # omit or leave blank to skip
+#
+# catalogue_format: intake                   # intake (YAML) | esm (JSON+CSV) | json
+#
+# intake YAML example — open with:
+#   import intake
+#   cat = intake.open_catalog('catalogue.yaml')
+#   ds = cat.run1.to_dask()
+#
+# esm example — open with:
+#   import intake
+#   cat = intake.open_esm_datastore('catalogue.json')
+#   ds = cat.search(variables='rsds').to_dataset_dict()
+#
+# json — plain provenance record, no intake dependency required.
+
+# ---------------------------------------------------------------------------
+# CMIP6 / CMOR-style output (Phase 3.3)
+# ---------------------------------------------------------------------------
+# Set cmor: true to apply CMOR post-processing after conversion:
+#   - Variables renamed to CMIP6 short names (ta, hus, ua, rsds, …)
+#   - Units converted where CMIP6 mandates different units
+#   - Time axis re-encoded with the target calendar
+#   - Required CMIP6 global attributes injected
+#
+cmor: false                         # true → apply CMOR post-processing
+cmor_activity_id: CMIP              # CMIP | ScenarioMIP | HighResMIP | …
+cmor_experiment_id: ''              # e.g. historical, ssp585, amip
+cmor_source_id: ''                  # e.g. ACCESS-CM2, UKESM1-0-LL
+cmor_variant_label: r1i1p1f1        # e.g. r1i1p1f1, r2i1p1f1
+cmor_institution_id: ''             # e.g. CSIRO-ARCCSS, MOHC
+cmor_calendar: ''                   # 360_day | 365_day | proleptic_gregorian | ''
+cmor_drop_unmapped: false           # true → remove variables with no CMIP6 mapping
